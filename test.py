@@ -11,6 +11,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 import time
+import itertools
 import numpy as np
  #Male/femal/child
 
@@ -29,12 +30,9 @@ def get_url(input):
 
 def getNextPage(driver):
     #Geet next page
-    print("Next page")
+
     elem = driver.find_element(By.CLASS_NAME,"Pagination_next__DUhdH")
 
-
-    print("ELEMENT", elem)
-    #elem.click()
     driver.execute_script("arguments[0].click()", elem)
 
     # #Make sure that page exists before accessing information
@@ -60,7 +58,7 @@ def price_filter(elem, max_price: float):
 def size_filter(elem, target_size: str):
     after_key = re.findall(r"(?<=Größe:).*", elem)[0]
     split_string = after_key.split()
-    print(split_string)
+
 
     size_dict = {"Xs":["Xs", "xs", 32, 34],
                  "S": ["S","s", 36, 38],
@@ -85,7 +83,7 @@ def scrape_page(driver, size: str, price: float):
     hrefs = []
 
     html = driver.page_source
-    soup = BeautifulSoup(html)
+    soup = BeautifulSoup(html, "html.parser")
 
     links = soup.find_all('a', {"class": "ItemBox_overlay__1kNfX" } , href = True)
 
@@ -126,7 +124,11 @@ def scrape_vinted(person= "damen", size="M", price=50, pages=30):
             final_elements.append(page)
 
 
-    print(final_elements[0][0])
+    final_elements = list(itertools.chain(*final_elements))
+    print(final_elements[0])
+
+
+
 
 
 
