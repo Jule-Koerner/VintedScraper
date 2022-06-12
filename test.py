@@ -6,6 +6,7 @@ import requests
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
@@ -14,24 +15,29 @@ import numpy as np
  #Male/femal/child
 
 
+def get_url(input):
 
-url = "https://www.vinted.de/damen"
+    if input == "damen":
+        return "https://www.vinted.de/damen"
+
+    if input == "herren":
+        return "https://www.vinted.de/herren"
+
+    if input == "kinder":
+        return "https://www.vinted.de/kinder"
 
 
-
-driver = webdriver.Chrome(r'C:\Users\jule-\Downloads\chromedriver_win32\chromedriver.exe')
-driver.get(url)
-
-# this is just to ensure that the page is loaded
-time.sleep(5)
-
-
-def getNextPage():
+def getNextPage(driver):
     #Geet next page
+    print("Next page")
     elem = driver.find_element(By.CLASS_NAME,"Pagination_next__DUhdH")
-    elem.click()
 
-    #Make sure that page exists before accessing information
+
+    print("ELEMENT", elem)
+    #elem.click()
+    driver.execute_script("arguments[0].click()", elem)
+
+    # #Make sure that page exists before accessing information
     # try:
     #     element = WebDriverWait(driver, 20).until(
     #         EC.presence_of_element_located((By.ID, "myDynamicElement"))
@@ -75,29 +81,55 @@ def size_filter(elem, target_size: str):
             return False
 
 
-def scrape_page():
+def scrape_page(driver, size: str, price: float):
     hrefs = []
-    links = driver.find_elements(By.XPATH, "//a[@class = 'ItemBox_overlay__1kNfX'][@href]")
-    print("Lämnge", len(links))
 
-    #Only append if filters match
+    html = driver.page_source
+    soup = BeautifulSoup(html)
+
+    links = soup.find_all('a', {"class": "ItemBox_overlay__1kNfX" } , href = True)
+
+
+    #Only append if filters match user preferences
     for link in links:
-        elem = link.get_attribute("title")
-        size_match = size_filter(elem, "M")
-        price_match = price_filter(elem, float(40))
+
+        elem = link["title"]
+        size_match = size_filter(elem, size)
+        price_match = price_filter(elem, price)
 
         if size_match and price_match:
-            hrefs.append(link.get_attribute("href"))
-
+            hrefs.append(link["href"])
 
     return hrefs
 
 
 
 
-scrape_page()
+def scrape_vinted(person= "damen", size="M", price=50, pages=30):
+    final_elements = []
+    url = get_url(person)
+
+    driver = webdriver.Firefox()
+    driver.get(url)  # opens page
+
+    # this is just to ensure that the page is loaded
+    time.sleep(5)
+
+    page = scrape_page(driver, size, price)
+    if len(page) != 0:
+        final_elements.append(page)
+
+    for _ in range(pages):
+        getNextPage(driver)
+        page = scrape_page(driver, size, price)
+        if len(page) != 0:
+            final_elements.append(page)
+
+
+    print(final_elements[0][0])
 
 
 
 
+scrape_vinted()
 
