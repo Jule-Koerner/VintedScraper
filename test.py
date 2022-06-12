@@ -25,16 +25,6 @@ driver.get(url)
 # this is just to ensure that the page is loaded
 time.sleep(5)
 
-def scrapePage():
-    html = driver.page_source
-    soup = BeautifulSoup(html, "html.parser") #besser driver.page_source
-    html_source = driver.page_source
-
-    links = soup.find_all('a', {"class": "ItemBox_overlay__1kNfX" } , href = True)
-
-    links =[link["href"] for link in links]
-
-
 
 def getNextPage():
     #Geet next page
@@ -49,81 +39,63 @@ def getNextPage():
     # finally:
     #     driver.quit()
 
-def priceFilter(elem):
-    #filter Price
-    #test_string = links[10].get_attribute("title")
-    print(test_string)
-    #split_string = np.array(links[0].get_attribute("title").split("Preis:"))
+def price_filter(elem, max_price: float):
+
     after_key = re.findall(r"(?<=Preis:).*", elem)[0]
     split_string = after_key.split()
     price = float(split_string[0].replace(",", "."))
 
-    #return true or false
+    if price > max_price:
+        return False
+    else:
+        return True
 
 
-def sizeFilter(elem):
+def size_filter(elem, target_size: str):
     after_key = re.findall(r"(?<=Größe:).*", elem)[0]
     split_string = after_key.split()
     print(split_string)
 
-    pass
-#Return true or false
+    size_dict = {"Xs":["Xs", "xs", 32, 34],
+                 "S": ["S","s", 36, 38],
+                 "M": ["M", "m", 40, 42],
+                 "L": ["L", "l", 44, 46],
+                 "XL": ["XL", "xl", 48, 50],
+                 "XXL": ["XXL", "xxl", 52, 54]
+                 }
+    try:
+        size_dict[target_size]
+    except:
+        return False
+
+    else:
+        if len(list(set(split_string) & set(size_dict[target_size])))!=0:
+            return True
+        else:
+            return False
 
 
-
-
-
-def selScrapePage():
+def scrape_page():
     hrefs = []
-
     links = driver.find_elements(By.XPATH, "//a[@class = 'ItemBox_overlay__1kNfX'][@href]")
+    print("Lämnge", len(links))
 
-    #filter Price
-    test_string = links[19].get_attribute("title")
+    #Only append if filters match
+    for link in links:
+        elem = link.get_attribute("title")
+        size_match = size_filter(elem, "M")
+        price_match = price_filter(elem, float(40))
 
-    print(test_string)
-    #split_string = np.array(links[0].get_attribute("title").split("Preis:"))
-    after_key = re.findall(r"(?<=Preis:).*", test_string)[0]
-    split_string = after_key.split()
-    price = float(split_string[0].replace(",", "."))
+        if size_match and price_match:
+            hrefs.append(link.get_attribute("href"))
 
 
-
-    #filter size
-    after_key = re.findall(r"(?<=Größe:).*", test_string)[0]
-    split_string = after_key.split()
-    print(split_string)
-
-    #Only append if filters pass
-    # for link in links:
-    #     elem = link.get_attribute("title")
-    #     sizeMatch = sizeFilter(elem)
-    #     priceMatch = priceFilter(elem)
-    #
-    #     if sizeMatch and priceMatch:
-    #         hrefs.append(links)
-    #
-    # return hrefs
+    return hrefs
 
 
 
 
-
-
-
-    #print(split_string)
-    #target_index = int(np.where(split_string == "Preis:"))
-    #print(target_index)
-    #price = float(split_string[target_index[0]+1][0])
-    #print("preis", price)
-
-
-
-
-
-
-
-selScrapePage()
+scrape_page()
 
 
 
