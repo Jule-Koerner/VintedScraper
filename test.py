@@ -139,7 +139,7 @@ def scrape_page(driver, size: str, price: float):
             # color = img_soup.find(itemprop = "color").contents
 
             image_path = download_image(img_soup, file_name=f"\img{i}.png")
-            final_element = (link["href"], image_path, list(color))
+            final_element = (image_path, list(color))
             final_elements.append(final_element)
     return final_elements
 
