@@ -129,7 +129,7 @@ def get_matches():
     final_link = link+"&page=1"
     print("type final link", final_link)
     print("start link", final_link)
-    scraper = vintedScraper.VintedScraper(final_link, pages=50)
+    scraper = vintedScraper.VintedScraper(final_link, pages=15)
 
     #Start scraping
 
@@ -140,11 +140,12 @@ def get_matches():
 
 
     network_similarity = NetworkSimilarity.NetworkSimilarity(r"C:\Users\jule-\Documents\Uni\SciPy\vintedScraper\images\karo.png", paths)
-    cosine_similarity = network_similarity.cosine_similarities()
-    print(cosine_similarity)
+    query_e, scrape_e = network_similarity.cosine_similarities()
+    #print(cosine_similarity)
 
-    knearest = kNearestClothes.KNearestClothes(cosine_similarity)
+    knearest = kNearestClothes.KNearestClothes(query_e, scrape_e)
     knearest()
+    print("IM OUTTTTTTTTTTTTTTTTTTTTTTTTTT")
     knearest.plot_k_nearest_clothes(paths, r"C:\Users\jule-\Documents\Uni\SciPy\vintedScraper\images\karo.png")
 
 
@@ -159,6 +160,7 @@ button_explore = Button(root,
 button_explore.pack(fill=tk.X, side = tk.TOP)
 
 while True:
+
 
     root.update_idletasks()
     root.update()

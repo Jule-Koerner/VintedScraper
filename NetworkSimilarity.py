@@ -37,6 +37,7 @@ class NetworkSimilarity:
 
         query_image = model.encode(Image.open(self.query_image_path))
 
+
         cosine_similarities = [np.round(self.cosine_formula(query_image, image), 2) for image in encoded_images]
 
-        return np.array(cosine_similarities)
+        return query_image, encoded_images
